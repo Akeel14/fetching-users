@@ -1,8 +1,12 @@
 let allUsers = [];
+let isLoading = false;
 
 async function loadUserData() {
   const apiEndpoint = 'https://jsonplaceholder.typicode.com/users';
   const dataContainer = document.getElementById('userDataDisplay');
+
+  isLoading = true;
+  renderUsers([]);
 
   try {
     const response = await fetch(apiEndpoint);
@@ -18,14 +22,24 @@ async function loadUserData() {
       'There was a problem with the fetch operation:',
       error.message
     );
+    dataContainer.innerHTML =
+      '<p>Error fetching data. Please try again later.</p>';
+  } finally {
+    isLoading = false;
+    renderUsers(allUsers);
   }
 }
 
 function renderUsers(users) {
   const dataContainer = document.getElementById('userDataDisplay');
-  const userCards = users
-    .map((user) => {
-      return `
+
+  dataContainer.innerHTML = isLoading
+    ? '<p>Loading data...</p>'
+    : !users.length
+    ? '<p>No users found or no data available.</p>'
+    : users
+        .map(
+          (user) => `
         <div class="user-card">
             <h2>${user.name} (${user.username})</h2>
             <p>Email: ${user.email}</p>
@@ -45,10 +59,9 @@ function renderUsers(users) {
                 <p>BS: ${user.company.bs}</p>
             </div>
         </div>
-    `;
-    })
-    .join('');
-  dataContainer.innerHTML = userCards;
+    `
+        )
+        .join('');
 }
 
 function filterUsers() {
